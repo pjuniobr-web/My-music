@@ -54,8 +54,15 @@
         .gift-box h3 { color: white; margin-bottom: 5px; font-size: 18px; }
         .gift-box p { color: #ffeaa7; font-size: 13px; }
         
-        /* BOTÃO DO YOUTUBE */
+        /* BOTÕES ESPECIAIS (YOUTUBE E SPOTIFY) */
         .btn-youtube { background: #ff0000; color: white; display: inline-block; padding: 12px 20px; border-radius: 20px; font-weight: bold; text-decoration: none; width: 100%; text-align: center; margin-top: 8px; box-shadow: 0 4px 10px rgba(255, 0, 0, 0.3); }
+        .btn-spotify { background: #1DB954; color: white; display: inline-block; padding: 12px 20px; border-radius: 20px; font-weight: bold; text-decoration: none; width: 100%; text-align: center; margin-top: 8px; box-shadow: 0 4px 10px rgba(29, 185, 84, 0.3); }
+        
+        /* BOTÕES DE RESPOSTA SIM/NÃO */
+        .btn-response-container { display: flex; gap: 10px; margin-top: 10px; width: 100%; }
+        .btn-response { flex: 1; padding: 10px; border: none; border-radius: 15px; font-weight: bold; font-size: 14px; cursor: pointer; color: white; }
+        .btn-yes { background: #00a884; }
+        .btn-no { background: #ff4757; }
         
         /* INDICADOR DE DIGITAÇÃO ONDULANTE */
         .typing { display: none; margin-bottom: 10px; align-self: flex-start; }
@@ -83,7 +90,7 @@
             <div class="typing" id="typing-indicator"><span>💬</span><span>💬</span><span>💬</span></div>
         </div>
 
-        <div class="chat-input-area">
+        <div class="chat-input-area" id="input-area">
             <input type="text" id="user-input" placeholder="Mensagem" autocomplete="off" onkeypress="handleKeyPress(event)">
             <button class="btn-send" onclick="sendMessage()">➤</button>
         </div>
@@ -98,6 +105,7 @@
         const userInput = document.getElementById("user-input");
         const typingIndicator = document.getElementById("typing-indicator");
         const audio = document.getElementById("musica");
+        const inputArea = document.getElementById("input-area");
 
         // Controle da Tela de Abertura (3 segundos)
         window.onload = () => {
@@ -141,12 +149,14 @@
             if (e.key === "Enter") sendMessage();
         }
 
-        function sendMessage() {
-            const text = userInput.value.trim();
+        function sendMessage(customText = null) {
+            const text = customText || userInput.value.trim();
             if (text === "") return;
             
             appendMessage(text, "user");
-            userInput.value = "";
+            
+            if(!customText) userInput.value = "";
+            
             processBotResponse(text);
         }
 
@@ -181,7 +191,7 @@
                     break;
 
                 case 4: // Pergunta 5: Explica o trapnejo
-                    botTyping("Trapnejo é a fusão entre o sertanejo e o trap (um subgênero do rap). O estilo combina as batidas graves, o uso de sintetizadores e a estética urbana do hip-hop com as melodias, letras românticas e refrões chicletes típicos da música sertaneja. 🔥", 1500);
+                    botTyping("Trapnejo é a fusão entre o sertanejo e o trap (um subgênero do rap). O estilo combina as batidas graves, o uso de sintetizadores e a estética urbana do hip-hop com as melodias, letras românticas e refrões chicletes típicos da música música sertaneja. 🔥", 1500);
                     
                     setTimeout(() => {
                         botTyping("Eu selecionei um artista em ascensão pra você ouvir e me dizer o que acha. Quer ouvir?", 2000);
@@ -210,8 +220,7 @@
                     botTyping("Escuta a música aí primeiro, depois me diz o que achou! 😉");
                     break;
 
-                case 7: // Pergunta final: FeedBack (Gostou, Mais ou menos, Não)
-                    // Se a pessoa falar que gostou, amou, etc...
+                case 7: // Pergunta final: FeedBack
                     if (lowerText.includes("sim") || lowerText.includes("gostei") || lowerText.includes("amei") || lowerText.includes("top") || lowerText.includes("bom") || lowerText.includes("da hora") || lowerText.includes("legal") || lowerText.includes("curti")) {
                         
                         botTyping(`Fico muito feliz que gostou, ${userName}! 😍 Por favor, envie o link pros seus amigos ouvirem também.`, 1500);
@@ -227,25 +236,39 @@
                         }, 2500);
 
                     } else {
-                        // Se a pessoa falar "mais ou menos", "não", "ruim", etc...
                         botTyping("Ah, entendi! Como essa não foi 100% a sua praia, que tal dar uma olhada em outras músicas? Confere a minha playlist lá no YouTube, tem vários estilos! 🎶", 1500);
-                        
                         setTimeout(() => {
-                            // Link atualizado para a sua playlist do YouTube
-                            const ytButton = `
-                                <a href="https://youtube.com/@vulgojoficial?si=0RqrD5y89s-hiI6L" target="_blank" class="btn-youtube">
-                                    ▶ ACESSAR PLAYLIST NO YOUTUBE
-                                </a>
-                            `;
+                            const ytButton = `<a href="https://youtube.com/@vulgojoficial?si=0RqrD5y89s-hiI6L" target="_blank" class="btn-youtube">▶ ACESSAR PLAYLIST NO YOUTUBE</a>`;
                             botTyping(ytButton, 1500, true);
                         }, 3000);
+                        chatState = 99; 
                     }
-                    chatState = 8;
+                    break;
+                    
+                case 8: // Processa resposta dos botões Sim/Não do Spotify
+                    inputArea.style.display = 'flex'; 
+                    
+                    if(lowerText === "sim") {
+                        botTyping("Que ótimo! Então agora ouça as outras músicas no Spotify! 🎧", 1500);
+                    } else if (lowerText === "não") {
+                        botTyping("Sem problemas! Mas vou deixar o link aqui caso você queira conferir depois, tá bom? 🎧", 1500);
+                    }
+
+                    setTimeout(() => {
+                        const spotButton = `
+                            <a href="https://open.spotify.com/artist/0vMDvBbLaXnTHmVAFWOzps?si=69VdiuHrRDmRRSPn6GX_SA" target="_blank" class="btn-spotify">
+                                ▶ OUVIR NO SPOTIFY
+                            </a>
+                        `;
+                        botTyping(spotButton, 1500, true);
+                    }, 3000);
+                    
+                    chatState = 99; 
                     break;
             }
         }
 
-        // CONTROLE DO ÁUDIO DENTRO DO CHAT
+        // CONTROLE DO ÁUDIO MODIFICADO: Se pausar no meio, o bot avança automaticamente!
         function toggleAudio() {
             const btn = document.getElementById("btn-audio");
             if (audio.paused) {
@@ -253,18 +276,26 @@
                 btn.innerText = "⏸ PAUSAR MÚSICA";
             } else {
                 audio.pause();
-                btn.innerText = "▶ OUVIR MÚSICA 🎶";
+                btn.innerText = "▶ OUVIR NOVAMENTE";
+                
+                // Se o estado ainda for o de espera da música, avança o chat direto ao pausar
+                if (chatState === 6) {
+                    chatState = 7; 
+                    botTyping(`E então, ${userName}, gostou da música? Seja sincero(a)! 👀`, 1000);
+                }
             }
         }
 
-        // QUANDO A MÚSICA ACABAR SOZINHA MUDA O ESTADO E PERGUNTA
+        // QUANDO A MÚSICA ACABAR SOZINHA
         audio.onended = function() {
             document.getElementById("btn-audio").innerText = "▶ OUVIR NOVAMENTE";
-            chatState = 7; // Muda o estado para ele aceitar o feedback
-            botTyping(`E então, ${userName}, gostou da música? Seja sincero(a)! 👀`, 1000);
+            if (chatState === 6) {
+                chatState = 7; 
+                botTyping(`E então, ${userName}, gostou da música? Seja sincero(a)! 👀`, 1000);
+            }
         };
 
-        // FUNÇÃO DE DOWNLOAD AUTOMÁTICO
+        // FUNÇÃO DE DOWNLOAD AUTOMÁTICO E CONTINUAÇÃO
         function downloadMusic() {
             const link = document.createElement('a');
             link.href = 'musica.mp3'; 
@@ -272,6 +303,19 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            
+            setTimeout(() => {
+                const buttons = `
+                    Me conta, você ouviria mais músicas como essa?
+                    <div class="btn-response-container">
+                        <button class="btn-response btn-yes" onclick="sendMessage('Sim')">SIM</button>
+                        <button class="btn-response btn-no" onclick="sendMessage('Não')">NÃO</button>
+                    </div>
+                `;
+                chatState = 8; 
+                botTyping(buttons, 1500, true);
+                inputArea.style.display = 'none';
+            }, 2000);
         }
     </script>
 </body>
