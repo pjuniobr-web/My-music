@@ -17,7 +17,7 @@
         #chat-app { display: none; flex-direction: column; height: 100%; background: #87CEEB url('fundo.png') center/cover no-repeat; position: relative; }
         #chat-app::before { content: ''; position: absolute; inset: 0; background: rgba(135, 206, 235, 0.2); z-index: 1; }
 
-        /* CABEÇALHO - Fundo Azul Celeste */
+        /* CABEÇALHO */
         .chat-header { position: relative; z-index: 2; background: #87CEEB; padding: 15px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #5DADE2; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
         .avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; } 
         .header-info h2 { font-size: 18px; color: #111; }
@@ -54,7 +54,7 @@
         .gift-box h3 { color: white; margin-bottom: 5px; font-size: 18px; }
         .gift-box p { color: #ffeaa7; font-size: 13px; }
         
-        /* BOTÕES ESPECIAIS (YOUTUBE E SPOTIFY) */
+        /* BOTÕES ESPECIAIS */
         .btn-youtube { background: #ff0000; color: white; display: inline-block; padding: 12px 20px; border-radius: 20px; font-weight: bold; text-decoration: none; width: 100%; text-align: center; margin-top: 8px; box-shadow: 0 4px 10px rgba(255, 0, 0, 0.3); }
         .btn-spotify { background: #1DB954; color: white; display: inline-block; padding: 12px 20px; border-radius: 20px; font-weight: bold; text-decoration: none; width: 100%; text-align: center; margin-top: 8px; box-shadow: 0 4px 10px rgba(29, 185, 84, 0.3); }
         
@@ -107,7 +107,7 @@
         const audio = document.getElementById("musica");
         const inputArea = document.getElementById("input-area");
 
-        // Controle da Tela de Abertura (3 segundos)
+        // Controle da Tela de Abertura
         window.onload = () => {
             setTimeout(() => {
                 document.getElementById('splash-screen').style.opacity = '0';
@@ -164,34 +164,34 @@
             const lowerText = text.toLowerCase();
 
             switch (chatState) {
-                case 0: // Pergunta 1: Nome
+                case 0:
                     userName = text;
                     botTyping(`Prazer em te conhecer, ${userName}! Tem quantos anos?`);
                     chatState = 1;
                     break;
                     
-                case 1: // Pergunta 2: Idade
+                case 1:
                     botTyping("Entendi! Me diz uma coisa, eu quero te mostrar uma música, posso?");
                     chatState = 2;
                     break;
 
-                case 2: // Pergunta 3: Posso mostrar música?
+                case 2:
                     botTyping("Legal! Mas antes... que estilo musical você gosta de ouvir?");
                     chatState = 3;
                     break;
 
-                case 3: // Pergunta 4: Estilo musical
+                case 3:
                     if (lowerText.includes("trapnejo")) {
                         botTyping("Ah, você já tem bom gosto! Eu selecionei um artista em ascensão pra você ouvir. Quer ouvir agora?", 2000);
-                        chatState = 5; // Pula a explicação
+                        chatState = 5;
                     } else {
                         botTyping(`Nossa, que da hora, gostei! Mas, ${userName}, já ouviu falar no estilo trapnejo?`, 1500);
-                        chatState = 4; // Espera a resposta
+                        chatState = 4;
                     }
                     break;
 
-                case 4: // Pergunta 5: Explica o trapnejo
-                    botTyping("Trapnejo é a fusão entre o sertanejo e o trap (um subgênero do rap). O estilo combina as batidas graves, o uso de sintetizadores e a estética urbana do hip-hop com as melodias, letras românticas e refrões chicletes típicos da música música sertaneja. 🔥", 1500);
+                case 4:
+                    botTyping("Trapnejo é a fusão entre o sertanejo e o trap (um subgênero do rap). O estilo combina as batidas graves, o uso de sintetizadores e a estética urbana do hip-hop com as melodias, letras românticas e refrões chicletes típicos da música sertaneja. 🔥", 1500);
                     
                     setTimeout(() => {
                         botTyping("Eu selecionei um artista em ascensão pra você ouvir e me dizer o que acha. Quer ouvir?", 2000);
@@ -200,7 +200,7 @@
                     chatState = 5;
                     break;
 
-                case 5: // Pergunta 6: Botão de tocar a música
+                case 5:
                     if (lowerText.includes("sim") || lowerText.includes("quero") || lowerText.includes("bora") || lowerText.includes("pode") || lowerText.includes("manda")) {
                         const musicCard = `
                             <div class="music-card">
@@ -216,11 +216,11 @@
                     }
                     break;
 
-                case 6: // Aguardando música acabar
+                case 6:
                     botTyping("Escuta a música aí primeiro, depois me diz o que achou! 😉");
                     break;
 
-                case 7: // Pergunta final: FeedBack
+                case 7:
                     if (lowerText.includes("sim") || lowerText.includes("gostei") || lowerText.includes("amei") || lowerText.includes("top") || lowerText.includes("bom") || lowerText.includes("da hora") || lowerText.includes("legal") || lowerText.includes("curti")) {
                         
                         botTyping(`Fico muito feliz que gostou, ${userName}! 😍 Por favor, envie o link pros seus amigos ouvirem também.`, 1500);
@@ -245,7 +245,7 @@
                     }
                     break;
                     
-                case 8: // Processa resposta dos botões Sim/Não do Spotify
+                case 8:
                     inputArea.style.display = 'flex'; 
                     
                     if(lowerText === "sim") {
@@ -268,7 +268,7 @@
             }
         }
 
-        // CONTROLE DO ÁUDIO MODIFICADO: Se pausar no meio, o bot avança automaticamente!
+        // CONTROLE DO ÁUDIO GARANTINDO O AVANÇO NO PAUSE
         function toggleAudio() {
             const btn = document.getElementById("btn-audio");
             if (audio.paused) {
@@ -276,9 +276,9 @@
                 btn.innerText = "⏸ PAUSAR MÚSICA";
             } else {
                 audio.pause();
-                btn.innerText = "▶ OUVIR NOVAMENTE";
+                btn.innerText = "▶ CONTINUAR MÚSICA";
                 
-                // Se o estado ainda for o de espera da música, avança o chat direto ao pausar
+                // Força o avanço do chat se estiver na etapa de ouvir a música
                 if (chatState === 6) {
                     chatState = 7; 
                     botTyping(`E então, ${userName}, gostou da música? Seja sincero(a)! 👀`, 1000);
@@ -286,7 +286,6 @@
             }
         }
 
-        // QUANDO A MÚSICA ACABAR SOZINHA
         audio.onended = function() {
             document.getElementById("btn-audio").innerText = "▶ OUVIR NOVAMENTE";
             if (chatState === 6) {
@@ -295,7 +294,6 @@
             }
         };
 
-        // FUNÇÃO DE DOWNLOAD AUTOMÁTICO E CONTINUAÇÃO
         function downloadMusic() {
             const link = document.createElement('a');
             link.href = 'musica.mp3'; 
