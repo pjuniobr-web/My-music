@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chat com a Leuda 🔥</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body, html { height: 100%; width: 100%; overflow: hidden; background-color: #87CEEB; color: white; }
+        
+        /* TELA DE ABERTURA */
+        #splash-screen { position: fixed; inset: 0; background: #87CEEB url('nuvens.png') center/cover no-repeat; z-index: 10000; display: flex; justify-content: center; align-items: center; transition: opacity 1s; }
+        #splash-logo { max-width: 250px; width: 70%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(0.95); } 50% { transform: scale(1.05); } 100% { transform: scale(0.95); } }
+
+        /* CONTAINER DO CHAT */
+        #chat-app { display: none; flex-direction: column; height: 100%; background: #87CEEB url('fundo.png') center/cover no-repeat; position: relative; }
+        #chat-app::before { content: ''; position: absolute; inset: 0; background: rgba(135, 206, 235, 0.2); z-index: 1; }
+
+        /* CABEÇALHO - Fundo Azul Celeste */
+        .chat-header { position: relative; z-index: 2; background: #87CEEB; padding: 15px 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #5DADE2; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; } 
+        .header-info h2 { font-size: 18px; color: #111; }
+        .header-info p { font-size: 12px; color: #333; margin-top: 2px; font-weight: bold; }
+
+        /* ÁREA DE MENSAGENS */
+        .chat-messages { position: relative; z-index: 2; flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; }
+        
+        /* BALÕES DE MENSAGEM */
+        .msg { max-width: 85%; padding: 10px 15px; border-radius: 12px; font-size: 15px; line-height: 1.4; position: relative; word-wrap: break-word; animation: popIn 0.3s ease-out; }
+        @keyframes popIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* BALÃO DO BOT (LEUDA) */
+        .msg.bot { background: #87CEEB; color: #111; align-self: flex-start; border-top-left-radius: 0; }
+        .msg.user { background: #005c4b; color: #e9edef; align-self: flex-end; border-top-right-radius: 0; }
+        .time { font-size: 10px; color: #444; display: block; text-align: right; margin-top: 5px; }
+        .msg.user .time { color: #869694; }
+
+        /* ÁREA DE DIGITAÇÃO */
+        .chat-input-area { position: relative; z-index: 2; background: #87CEEB; padding: 10px; display: flex; gap: 10px; align-items: center; }
+        .chat-input-area input { flex: 1; background: #fff; border: none; padding: 15px; border-radius: 25px; color: #111; font-size: 16px; outline: none; }
+        .chat-input-area input::placeholder { color: #666; }
+        .btn-send { background: #00a884; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 20px; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+
+        /* PLAYER DE MÚSICA DENTRO DO CHAT */
+        .music-card { background: #182229; border: 1px solid #00a884; border-radius: 10px; padding: 15px; margin-top: 5px; text-align: center; }
+        .music-card h3 { color: #00a884; font-size: 16px; margin-bottom: 5px; }
+        .music-card p { font-size: 12px; color: #ccc; margin-bottom: 15px; }
+        .btn-play { background: #00a884; color: white; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; width: 100%; }
+
+        /* CAIXA DE PRESENTE (DOWNLOAD) */
+        .gift-box { background: linear-gradient(135deg, #ff4757, #ff6b81); border-radius: 10px; padding: 15px; text-align: center; margin-top: 5px; cursor: pointer; animation: shake 2s infinite; }
+        @keyframes shake { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+        .gift-box h3 { color: white; margin-bottom: 5px; font-size: 18px; }
+        .gift-box p { color: #ffeaa7; font-size: 13px; }
+        
+        /* BOTÃO DO YOUTUBE */
+        .btn-youtube { background: #ff0000; color: white; display: inline-block; padding: 12px 20px; border-radius: 20px; font-weight: bold; text-decoration: none; width: 100%; text-align: center; margin-top: 8px; box-shadow: 0 4px 10px rgba(255, 0, 0, 0.3); }
+        
+        /* INDICADOR DE DIGITAÇÃO ONDULANTE */
+        .typing { display: none; margin-bottom: 10px; align-self: flex-start; }
+        .typing span { display: inline-block; font-size: 16px; animation: wave 1.2s infinite; }
+        .typing span:nth-child(1) { animation-delay: 0s; }
+        .typing span:nth-child(2) { animation-delay: 0.2s; }
+        .typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes wave { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+    </style>
+</head>
+<body>
+
+    <div id="splash-screen"><img src="logo.png" id="splash-logo" alt="Logo"></div>
+
+    <div id="chat-app">
+        <div class="chat-header">
+            <img src="perfil.png" class="avatar" alt="Leuda">
+            <div class="header-info">
+                <h2>Elieuda (Leuda) 🔥</h2>
+                <p id="status">Online</p>
+            </div>
+        </div>
+
+        <div class="chat-messages" id="messages-container">
+            <div class="typing" id="typing-indicator"><span>💬</span><span>💬</span><span>💬</span></div>
+        </div>
+
+        <div class="chat-input-area">
+            <input type="text" id="user-input" placeholder="Mensagem" autocomplete="off" onkeypress="handleKeyPress(event)">
+            <button class="btn-send" onclick="sendMessage()">➤</button>
+        </div>
+    </div>
+
+    <audio id="musica" src="musica.mp3"></audio>
+
+    <script>
+        let chatState = 0;
+        let userName = "";
+        const messagesContainer = document.getElementById("messages-container");
+        const userInput = document.getElementById("user-input");
+        const typingIndicator = document.getElementById("typing-indicator");
+        const audio = document.getElementById("musica");
+
+        // Controle da Tela de Abertura (3 segundos)
+        window.onload = () => {
+            setTimeout(() => {
+                document.getElementById('splash-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('splash-screen').style.display = 'none';
+                    document.getElementById('chat-app').style.display = 'flex';
+                    botTyping("Olá! Eu sou a Elieuda, mas pode me chamar de Leuda 🔥. Qual o seu nome?");
+                }, 1000);
+            }, 3000);
+        };
+
+        function getTime() {
+            const now = new Date();
+            return now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+        }
+
+        function appendMessage(text, sender, isHTML = false) {
+            const div = document.createElement("div");
+            div.className = "msg " + sender;
+            div.innerHTML = (isHTML ? text : text) + `<span class="time">${getTime()}</span>`;
+            
+            messagesContainer.insertBefore(div, typingIndicator);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function botTyping(text, delay = 1500, isHTML = false) {
+            document.getElementById('status').innerText = "Digitando...";
+            typingIndicator.style.display = "block";
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            setTimeout(() => {
+                typingIndicator.style.display = "none";
+                document.getElementById('status').innerText = "Online";
+                appendMessage(text, "bot", isHTML);
+            }, delay);
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === "Enter") sendMessage();
+        }
+
+        function sendMessage() {
+            const text = userInput.value.trim();
+            if (text === "") return;
+            
+            appendMessage(text, "user");
+            userInput.value = "";
+            processBotResponse(text);
+        }
+
+        function processBotResponse(text) {
+            const lowerText = text.toLowerCase();
+
+            switch (chatState) {
+                case 0: // Pergunta 1: Nome
+                    userName = text;
+                    botTyping(`Prazer em te conhecer, ${userName}! Tem quantos anos?`);
+                    chatState = 1;
+                    break;
+                    
+                case 1: // Pergunta 2: Idade
+                    botTyping("Entendi! Me diz uma coisa, eu quero te mostrar uma música, posso?");
+                    chatState = 2;
+                    break;
+
+                case 2: // Pergunta 3: Posso mostrar música?
+                    botTyping("Legal! Mas antes... que estilo musical você gosta de ouvir?");
+                    chatState = 3;
+                    break;
+
+                case 3: // Pergunta 4: Estilo musical
+                    if (lowerText.includes("trapnejo")) {
+                        botTyping("Ah, você já tem bom gosto! Eu selecionei um artista em ascensão pra você ouvir. Quer ouvir agora?", 2000);
+                        chatState = 5; // Pula a explicação
+                    } else {
+                        botTyping(`Nossa, que da hora, gostei! Mas, ${userName}, já ouviu falar no estilo trapnejo?`, 1500);
+                        chatState = 4; // Espera a resposta
+                    }
+                    break;
+
+                case 4: // Pergunta 5: Explica o trapnejo
+                    botTyping("Trapnejo é a fusão entre o sertanejo e o trap (um subgênero do rap). O estilo combina as batidas graves, o uso de sintetizadores e a estética urbana do hip-hop com as melodias, letras românticas e refrões chicletes típicos da música sertaneja. 🔥", 1500);
+                    
+                    setTimeout(() => {
+                        botTyping("Eu selecionei um artista em ascensão pra você ouvir e me dizer o que acha. Quer ouvir?", 2000);
+                    }, 5000); 
+                    
+                    chatState = 5;
+                    break;
+
+                case 5: // Pergunta 6: Botão de tocar a música
+                    if (lowerText.includes("sim") || lowerText.includes("quero") || lowerText.includes("bora") || lowerText.includes("pode") || lowerText.includes("manda")) {
+                        const musicCard = `
+                            <div class="music-card">
+                                <h3>Artista: Pijay</h3>
+                                <p>Música: Morena</p>
+                                <button class="btn-play" id="btn-audio" onclick="toggleAudio()">▶ OUVIR MÚSICA 🎶</button>
+                            </div>
+                        `;
+                        botTyping(musicCard, 1000, true);
+                        chatState = 6;
+                    } else {
+                        botTyping("Ah, que pena! Mas se mudar de ideia é só falar 'sim'.");
+                    }
+                    break;
+
+                case 6: // Aguardando música acabar
+                    botTyping("Escuta a música aí primeiro, depois me diz o que achou! 😉");
+                    break;
+
+                case 7: // Pergunta final: FeedBack (Gostou, Mais ou menos, Não)
+                    // Se a pessoa falar que gostou, amou, etc...
+                    if (lowerText.includes("sim") || lowerText.includes("gostei") || lowerText.includes("amei") || lowerText.includes("top") || lowerText.includes("bom") || lowerText.includes("da hora") || lowerText.includes("legal") || lowerText.includes("curti")) {
+                        
+                        botTyping(`Fico muito feliz que gostou, ${userName}! 😍 Por favor, envie o link pros seus amigos ouvirem também.`, 1500);
+                        
+                        setTimeout(() => {
+                            const gift = `
+                                <div class="gift-box" onclick="downloadMusic()">
+                                    <h3>🎁 PRESENTE DA LEUDA</h3>
+                                    <p>Clique aqui para abrir e baixar a música no seu celular!</p>
+                                </div>
+                            `;
+                            botTyping("E como você curtiu, eu tenho uma surpresa pra você:" + gift, 2000, true);
+                        }, 2500);
+
+                    } else {
+                        // Se a pessoa falar "mais ou menos", "não", "ruim", etc...
+                        botTyping("Ah, entendi! Como essa não foi 100% a sua praia, que tal dar uma olhada em outras músicas? Confere a minha playlist lá no YouTube, tem vários estilos! 🎶", 1500);
+                        
+                        setTimeout(() => {
+                            // Link atualizado para a sua playlist do YouTube
+                            const ytButton = `
+                                <a href="https://youtube.com/@vulgojoficial?si=0RqrD5y89s-hiI6L" target="_blank" class="btn-youtube">
+                                    ▶ ACESSAR PLAYLIST NO YOUTUBE
+                                </a>
+                            `;
+                            botTyping(ytButton, 1500, true);
+                        }, 3000);
+                    }
+                    chatState = 8;
+                    break;
+            }
+        }
+
+        // CONTROLE DO ÁUDIO DENTRO DO CHAT
+        function toggleAudio() {
+            const btn = document.getElementById("btn-audio");
+            if (audio.paused) {
+                audio.play();
+                btn.innerText = "⏸ PAUSAR MÚSICA";
+            } else {
+                audio.pause();
+                btn.innerText = "▶ OUVIR MÚSICA 🎶";
+            }
+        }
+
+        // QUANDO A MÚSICA ACABAR SOZINHA MUDA O ESTADO E PERGUNTA
+        audio.onended = function() {
+            document.getElementById("btn-audio").innerText = "▶ OUVIR NOVAMENTE";
+            chatState = 7; // Muda o estado para ele aceitar o feedback
+            botTyping(`E então, ${userName}, gostou da música? Seja sincero(a)! 👀`, 1000);
+        };
+
+        // FUNÇÃO DE DOWNLOAD AUTOMÁTICO
+        function downloadMusic() {
+            const link = document.createElement('a');
+            link.href = 'musica.mp3'; 
+            link.download = 'Pijay_-_Morena.mp3';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
